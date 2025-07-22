@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:text_summarizer_app/res/api_constant.dart';
+import 'package:text_summarizer_app/results_page.dart';
 import 'package:text_summarizer_app/service/api_service.dart';
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,12 +14,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final TextEditingController _textEditingController = TextEditingController();
 
+  bool submittingRequest = false;
+
   @override
   void dispose() {
     _textEditingController.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -64,9 +68,14 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                     
-                    ElevatedButton(onPressed: (){}, style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber
-                    ), child: Text("Generate Summary", style: TextStyle(fontSize: 15, color: Colors.white),),)
+                    ElevatedButton(
+                      onPressed: onSubmitTap, style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
+                      child: submittingRequest
+                          ? Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                            child: CircularProgressIndicator(color: Colors.white,),
+                          )
+                          : Text("Generate Summary", style: TextStyle(fontSize: 15, color: Colors.white),),)
 
               ]),
             )),
@@ -86,11 +95,22 @@ class _HomePageState extends State<HomePage> {
         "text" : largeText
       };
 
+      setState(() => submittingRequest = true);
       final apiService = ApiService();
-      final response = apiService.postRequest(endpoint: ApiConstants.summarizeTextEndPoint, data: data);
+      final response = await apiService.postRequest(endpoint: ApiConstants.summarizeTextEndPoint, data: data);
+      if(response != null){
+        final map = jsonDecode(response.body)['message']['content'];
+        final introduction = map['introduction'];
+        List<dynamic> keyPointsMap = map['keyPoints'];
+        final conclusion = map['conclusion'];
+
+        Navigator.of(context).push(MaterialPageRoute(builder: (_)=> ResultsPage(introduction: introduction, keyPoints: keyPointsMap, conclusion: conclusion)));
+        _textEditingController.clear();
+      }
     }catch(e){
       debugPrint("Error message: ${e.toString()}");
     }
 
+    setState(() => submittingRequest = false);
   }
 }

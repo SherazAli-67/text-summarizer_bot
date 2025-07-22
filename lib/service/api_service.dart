@@ -19,19 +19,24 @@ class ApiService {
   ApiService._internal();
   final String _baseUrl = ApiConstants.baseUrl;
 
-  Future<http.Response> postRequest({required String endpoint, required Map<String, dynamic> data, }) async {
+  Future<http.Response?> postRequest({required String endpoint, required Map<String, dynamic> data, }) async {
     var url = Uri.parse(_baseUrl + endpoint);
     Map<String, String> headers =  await _getApiHeader();
-    debugPrint("Post request url: $url\nData: $data\nHeaders: $headers");
+    debugPrint("Post request url: $url");
 
-    final response = await http.post(
-      url,
-      headers: headers,
-      body: jsonEncode(data),
-    );
+    try{
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode(data),
+      );
 
-    debugPrint("Post request response: ${response.body}");
-    return response;
+      // debugPrint("Post request response: ${response.body}");
+      return response;
+    }catch(e){
+      debugPrint("Error while making api call: ${e.toString()}");
+    }
+    return null;
   }
 
   Future<http.Response?> getRequest({required String endpoint,}) async {
