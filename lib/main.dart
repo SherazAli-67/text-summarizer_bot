@@ -15,6 +15,8 @@ class MyApp extends StatelessWidget {
       title: 'Text Summarizer Bot',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        scaffoldBackgroundColor: Colors.white,
+        fontFamily: 'Montserrat'
       ),
       home: HomePage()
     );
